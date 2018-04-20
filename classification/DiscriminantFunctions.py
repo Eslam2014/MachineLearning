@@ -2,6 +2,10 @@ from ml import utilities
 import numpy as np
 import sys
 from abc import ABC,abstractmethod
+from functools import wraps
+
+
+
 
 class ML(ABC):
     coef_ = []
@@ -14,6 +18,7 @@ class ML(ABC):
     
     @abstractmethod
     def predict(self,X):
+   
         pass
     
     @abstractmethod
@@ -22,15 +27,26 @@ class ML(ABC):
     
 
 class FisherLinearDiscriminant(ML):
+    '''
+    w = S^-1 * (m2 − m1)
+    w0 = -w^T * (m1 + m2)/2
+    '''
+   
     means_ = []
     
     def fit(self,X,y):
-        '''
-        X:2d array
-            this contians the features of each sample [[f1,f2,..fn],[f1,f2,..fn]]
-        y:1d array
-            the label of each sample on X  
-        '''
+            
+        """Fit process classification model
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Training data
+        y : array-like, shape = (n_samples,)
+            Target values, must be binary
+        Returns
+        -------
+        self : returns an instance of self.
+        """
         self.classes_ = list(set(y))
         sum_samples = dict.fromkeys(self.classes_, [0]* len(X[0]))
         n_samples = dict.fromkeys(self.classes_, 0)
@@ -62,16 +78,16 @@ class FisherLinearDiscriminant(ML):
             self.coef_.append(np.transpose(wieghts)[0])
             avg_means = np.divide(np.add(rest_means,self.means_[class_index]),2)
             self.intercept_.append(np.multiply(np.dot(self.coef_[class_index],avg_means),-1))
-            
     def predict(self,X):
-        '''
-        X:2d array
-            this contians the features of each sample [[f1,f2,..fn],[f1,f2,..fn]]
-        
-        return :
-            y:1d array
-                predicted label of each sample on X  
-        '''
+        """Perform classification on an array of test vectors X.
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+        Returns
+        -------
+        C : array, shape = (n_samples,)
+            Predicted target values for X, values are from ``classes_``
+        """
         y = []
         for features in X:
             predicted_y = sys.maxsize
@@ -87,19 +103,23 @@ class FisherLinearDiscriminant(ML):
         
     
     def score(self,X,y):
-        '''
-        X:2d array
-            this contians the features of each sample [[f1,f2,..fn],[f1,f2,..fn]]
-        y:1d array
-            the label of each sample on X  
-        
-        return: score , confusion matrics
-            score: float
-                score of correct simples
-            confustion matrics:2d array
-                            contians wrong and right predictin for each class
-        '''
-    
+        """Returns the mean accuracy on the given test data and labels.
+        In multi-label classification, this is the subset accuracy
+        which is a harsh metric since you require for each sample that
+        each label set be correctly predicted.
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Test samples.
+        y : array-like, shape = (n_samples) or (n_samples, n_outputs)
+            True labels for X.
+        sample_weight : array-like, shape = [n_samples], optional
+            Sample weights.
+        Returns
+        -------
+        score : float
+            Mean accuracy of self.predict(X) wrt. y.
+        """
         confusion_matrix = [[0]*len(self.classes_) for i in range(len(self.classes_))]
         correct_predict = 0
         for real_class_index,features in enumerate(X):
