@@ -29,6 +29,7 @@ class ML(ABC):
 class FisherLinearDiscriminant(ML):
     '''
     w = S^-1 * (m2 − m1)
+    S = sum n -> c1 ((xn - m1) + (xn -m1)^-1) + sum n -> c2 ((xn - m2) + (xn -m2)^-1)
     w0 = -w^T * (m1 + m2)/2
     '''
    
